@@ -1,6 +1,6 @@
 extern crate threadpool;
 
-use threadpool::ThreadPool;
+use self::threadpool::ThreadPool;
 
 use std::collections::HashMap;
 use std::net::{TcpListener, TcpStream};
