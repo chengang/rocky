@@ -3,15 +3,15 @@ extern crate threadpool;
 use self::threadpool::ThreadPool;
 use std::net::TcpListener;
 use std::net::Ipv4Addr;
-use std::collections::HashMap;
 pub use http::RequestInfo;
+pub use router::Router;
 
 pub mod http;
 pub mod router;
 
 pub struct Rocky {
     listener: TcpListener,
-    pub router: HashMap<String, fn(RequestInfo)->String>,
+    pub router: Router,
 }
 
 pub fn new(ip: &str, port: u16) -> Rocky {
@@ -29,7 +29,7 @@ impl Rocky {
     pub fn run(&self) {
         let pool = ThreadPool::new(32);
         for stream in self.listener.incoming() {
-            let router = self.router.clone();
+            let router = self.router.routers.clone();
             match stream {
                 Ok(stream) => {
                     pool.execute(move|| {

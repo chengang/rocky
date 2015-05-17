@@ -3,10 +3,14 @@ use rocky::RequestInfo;
 
 fn main() {
     fn handler(req: RequestInfo) -> String {
-        return req.request_uri;
+        let mut response = String::new();
+        response.push_str("hello world.\n");
+        response.push_str("your request_uri is:");
+        response.push_str(&req.request_uri);
+        return response;
     }
 
     let mut rocky = rocky::new("127.0.0.1", 4321);
-    rocky.router.insert("404".to_string(), handler );
+    rocky.router.get("404", handler );
     rocky.run();
 }
