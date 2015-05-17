@@ -22,7 +22,7 @@ impl Rocky {
         let listener = TcpListener::bind((listener_ip, port)).unwrap();
         Rocky {
             listener: listener,
-            router: router::new(),
+            router: Router::new(),
         }
     }
 
