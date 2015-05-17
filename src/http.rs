@@ -144,10 +144,13 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
 
     let mut body = String::new();
     let mut status = String::new();
-    //if request_info.request_script.contains("add") {
-    if 1==1 {
+    if router.contains_key(&request_info.request_script) {
         status.push_str("200 OK");
-        let handler = router.get(&"404".to_string()).unwrap();
+        let handler = router.get(&request_info.request_script).unwrap();
+        body = handler(request_info);
+    } else if router.contains_key("default") {
+        status.push_str("200 OK");
+        let handler = router.get("default").unwrap();
         body = handler(request_info);
     } else {
         status.push_str("404 Not Found");
