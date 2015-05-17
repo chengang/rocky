@@ -1,11 +1,12 @@
 extern crate rocky;
-use rocky::http::RequestInfo;
+use rocky::RequestInfo;
 
 fn main() {
-    let ip = "127.0.0.1";
-    let port = 4321;
     fn handler(req: RequestInfo) -> String {
         return req.request_uri;
     }
-    rocky::start(ip, port, handler);
+
+    let mut rocky = rocky::new("127.0.0.1", 4321);
+    rocky.router.insert("404".to_string(), handler );
+    rocky.run();
 }
