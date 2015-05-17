@@ -4,10 +4,12 @@ use self::threadpool::ThreadPool;
 use std::net::TcpListener;
 use std::net::Ipv4Addr;
 pub use http::Request;
+pub use response::Response;
 pub use router::Router;
 
 pub mod http;
 pub mod router;
+pub mod response;
 
 pub struct Rocky {
     listener: TcpListener,

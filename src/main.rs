@@ -1,20 +1,20 @@
 extern crate rocky;
-use rocky::Request;
+use rocky::{Request, Response};
 
 fn main() {
-    fn default_handler(req: Request) -> String {
-        let mut response = String::new();
-        response.push_str("404 Not Found.\n");
-        response.push_str(&req.request_script);
-        response.push_str(" lost.");
+    fn default_handler(req: Request) -> Response {
+        let mut response = Response::new();
+        response.echo("404 Not Found.\n");
+        response.echo(&req.request_script);
+        response.echo(" lost.");
         return response;
     }
 
-    fn handler(req: Request) -> String {
-        let mut response = String::new();
-        response.push_str("hello world.\n");
-        response.push_str("your request_uri is:");
-        response.push_str(&req.request_script);
+    fn handler(req: Request) -> Response {
+        let mut response = Response::new();
+        response.echo("hello world.\n");
+        response.echo("your request_uri is:");
+        response.echo(&req.request_script);
         return response;
     }
 
