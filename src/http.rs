@@ -157,7 +157,7 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
         body.push_str("Not Found");
     }
     let response = format!("HTTP/1.0 {}\r\n\
-                       Server: HTTPLite\r\n\
+                       Server: Rocky\r\n\
                        Content-Length: {}\r\n\
                        \r\n\
                        {}\r\n", 
