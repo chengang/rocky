@@ -16,18 +16,16 @@ pub struct Rocky {
     pub router: Router,
 }
 
-pub fn new(ip: &str, port: u16) -> Rocky {
-    let listener_ip = ip.parse::<Ipv4Addr>().unwrap();
-    let listener = TcpListener::bind((listener_ip, port)).unwrap();
-    let router = router::new();
-    let rocky = Rocky {
-        listener: listener,
-        router: router,
-    };
-    return rocky;
-}
-
 impl Rocky {
+    pub fn new(ip: &str, port: u16) -> Rocky {
+        let listener_ip = ip.parse::<Ipv4Addr>().unwrap();
+        let listener = TcpListener::bind((listener_ip, port)).unwrap();
+        Rocky {
+            listener: listener,
+            router: router::new(),
+        }
+    }
+
     pub fn run(&self) {
         let pool = ThreadPool::new(32);
         for stream in self.listener.incoming() {

@@ -1,5 +1,5 @@
 extern crate rocky;
-use rocky::{Request, Response};
+use rocky::{Rocky, Request, Response};
 
 fn main() {
     fn default_handler(req: Request) -> Response {
@@ -18,7 +18,7 @@ fn main() {
         return response;
     }
 
-    let mut rocky = rocky::new("127.0.0.1", 4321);
+    let mut rocky = Rocky::new("127.0.0.1", 4321);
     rocky.router.get("default", default_handler );
     rocky.router.get("/hello_world", handler );
     rocky.run();
