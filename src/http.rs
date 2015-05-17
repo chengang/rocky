@@ -26,7 +26,7 @@ pub struct RequestHeader {
 }
 
 #[allow(dead_code)]
-pub struct RequestInfo {
+pub struct Request {
     pub remote_ip: String,
     pub remote_port: u16,
     pub method: String,
@@ -121,11 +121,11 @@ fn get_request_header(stream: &TcpStream) -> RequestHeader {
     return request_header;
 }
 
-fn get_request_info(stream: &TcpStream) -> RequestInfo {
+fn get_request_info(stream: &TcpStream) -> Request {
     let request_line = get_request_line(&stream);
     let request_header = get_request_header(&stream);
     let remote_addr = get_remote_addr(&stream);
-    let request_info = RequestInfo {
+    let request_info = Request {
         remote_ip: remote_addr.ip,
         remote_port: remote_addr.port,
         method: request_line.method,
@@ -139,7 +139,7 @@ fn get_request_info(stream: &TcpStream) -> RequestInfo {
     return request_info;
 }
 
-pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(RequestInfo)->String>) {
+pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)->String>) {
     let request_info = get_request_info(&stream);
 
     let mut body = String::new();

@@ -1,8 +1,8 @@
 extern crate rocky;
-use rocky::RequestInfo;
+use rocky::Request;
 
 fn main() {
-    fn handler(req: RequestInfo) -> String {
+    fn handler(req: Request) -> String {
         let mut response = String::new();
         response.push_str("hello world.\n");
         response.push_str("your request_uri is:");

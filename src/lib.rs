@@ -3,7 +3,7 @@ extern crate threadpool;
 use self::threadpool::ThreadPool;
 use std::net::TcpListener;
 use std::net::Ipv4Addr;
-pub use http::RequestInfo;
+pub use http::Request;
 pub use router::Router;
 
 pub mod http;
