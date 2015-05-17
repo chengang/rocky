@@ -1,11 +1,6 @@
-extern crate threadpool;
-
-use self::threadpool::ThreadPool;
-
-use std::collections::HashMap;
-use std::net::{TcpListener, TcpStream};
+use std::net::TcpStream;
 use std::io::prelude::*;
-use std::net::Ipv4Addr;
+use std::collections::HashMap;
 
 #[allow(dead_code)]
 struct RemoteAddr {
@@ -144,7 +139,7 @@ fn get_request_info(stream: &TcpStream) -> RequestInfo {
     return request_info;
 }
 
-fn handle_client(mut stream: TcpStream, handler: fn(RequestInfo)->String) {
+pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(RequestInfo)->String>) {
     let request_info = get_request_info(&stream);
 
     let mut body = String::new();
@@ -152,6 +147,7 @@ fn handle_client(mut stream: TcpStream, handler: fn(RequestInfo)->String) {
     //if request_info.request_script.contains("add") {
     if 1==1 {
         status.push_str("200 OK");
+        let handler = router.get(&"404".to_string()).unwrap();
         body = handler(request_info);
     } else {
         status.push_str("404 Not Found");
@@ -164,22 +160,4 @@ fn handle_client(mut stream: TcpStream, handler: fn(RequestInfo)->String) {
                        {}\r\n", 
                        status, body.len()+2, body);
     let _ =  stream.write(response.as_bytes());
-}
-
-pub fn start(ip: &str, port: u16, handler: fn(RequestInfo)->String) {
-    let listener_ip = ip.parse::<Ipv4Addr>().unwrap();
-    let listener = TcpListener::bind((listener_ip, port)).unwrap();
-    let pool = ThreadPool::new(32);
-
-    for stream in listener.incoming() {
-        match stream {
-            Ok(stream) => {
-                pool.execute(move|| {
-                    handle_client(stream, handler);
-                });
-            }
-            Err(e) => { let _ = e;}
-        }
-    }
-    drop(listener);
 }

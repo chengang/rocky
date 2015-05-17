@@ -7,5 +7,5 @@ fn main() {
     fn handler(req: RequestInfo) -> String {
         return req.request_uri;
     }
-    rocky::http::start(ip, port, handler);
+    rocky::start(ip, port, handler);
 }
