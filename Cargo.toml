@@ -2,6 +2,11 @@
 name = "rocky"
 version = "0.1.0"
 authors = ["Chen Gang <chengang@cpan.org>"]
+repository = "https://github.com/chengang/rocky"
+description = "Lite WebFramework in rust"
+license = "MIT"
+readme = "README.md"
+keywords = ["WebFramework", "Router"]
 
 [dependencies]
 threadpool = "0.1"
