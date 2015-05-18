@@ -2,43 +2,8 @@ use std::net::TcpStream;
 use std::io::prelude::*;
 use std::collections::HashMap;
 
+use request::{RemoteAddr, RequestLine, RequestHeader, Request};
 use response::Response;
-
-#[allow(dead_code)]
-struct RemoteAddr {
-    ip: String,
-    port: u16,
-}
-
-#[allow(dead_code)]
-struct RequestLine {
-    method: String,
-    request_uri: String,
-    protocol_version: String,
-    request_script: String,
-    query_string: String,
-    get_argv: HashMap<String, String>,
-}
-
-#[allow(dead_code)]
-pub struct RequestHeader {
-    pub user_agent: String,
-    pub host: String,
-    pub accept: String,
-}
-
-#[allow(dead_code)]
-pub struct Request {
-    pub remote_ip: String,
-    pub remote_port: u16,
-    pub method: String,
-    pub request_uri: String,
-    pub protocol_version: String,
-    pub request_script: String,
-    pub query_string: String,
-    pub get_argv: HashMap<String, String>,
-    pub header: RequestHeader,
-}
 
 fn get_remote_addr(stream: &TcpStream) -> RemoteAddr {
     let peer = stream.peer_addr().unwrap().to_string();
@@ -47,8 +12,7 @@ fn get_remote_addr(stream: &TcpStream) -> RemoteAddr {
     let peer_ip = v[0].to_string();
     let peer_port = v[1].parse::<u16>().ok().expect("fail parse port to i32");
 
-    let remote_addr = RemoteAddr {ip: peer_ip, port: peer_port};
-    return remote_addr;
+    RemoteAddr {ip: peer_ip, port: peer_port}
 }
 
 fn ht_readline(mut stream: &TcpStream) -> String {
@@ -91,15 +55,14 @@ fn get_request_line(stream: &TcpStream) -> RequestLine {
         }
     }
 
-    let request_line = RequestLine {
+    RequestLine {
         method: method, 
             request_uri: request_uri, 
             protocol_version: protocol_version,
             request_script: request_script,
             query_string: query_string,
             get_argv: get_argv,
-    };
-    return request_line;
+    }
 }
 
 fn get_request_header(stream: &TcpStream) -> RequestHeader {
@@ -127,7 +90,7 @@ fn get_request_info(stream: &TcpStream) -> Request {
     let request_line = get_request_line(&stream);
     let request_header = get_request_header(&stream);
     let remote_addr = get_remote_addr(&stream);
-    let request_info = Request {
+    Request {
         remote_ip: remote_addr.ip,
         remote_port: remote_addr.port,
         method: request_line.method,
@@ -137,8 +100,7 @@ fn get_request_info(stream: &TcpStream) -> Request {
         protocol_version: request_line.protocol_version,
         get_argv: request_line.get_argv,
         header: request_header,
-    };
-    return request_info;
+    }
 }
 
 pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)->Response>) {
