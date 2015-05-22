@@ -1,4 +1,10 @@
 extern crate threadpool;
+pub mod http;
+pub mod router;
+pub mod request;
+pub mod response;
+pub mod template;
+pub mod common;
 
 use self::threadpool::ThreadPool;
 use std::net::TcpListener;
@@ -6,11 +12,8 @@ use std::net::Ipv4Addr;
 pub use request::Request;
 pub use response::Response;
 pub use router::Router;
-
-pub mod http;
-pub mod router;
-pub mod request;
-pub mod response;
+pub use template::Template;
+pub use common::*;
 
 pub struct Rocky {
     listener: TcpListener,
