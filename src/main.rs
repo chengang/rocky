@@ -1,5 +1,5 @@
 extern crate rocky;
-use rocky::{Rocky, Request, Response, Template};
+use rocky::{Rocky, Request, Response};
 
 fn main() {
     fn default_handler(req: Request) -> Response {
@@ -20,13 +20,9 @@ fn main() {
 
     fn template_handler(req: Request) -> Response {
         let mut resp = Response::new();
-        let templates = Template::new("template");
-        let template = "123".to_string();
-        resp.echo("hello world.\n");
-        resp.echo("your requesis:");
-        let c = templates.templates.get(&template).unwrap();
-        resp.echo(&req.request_script);
-        resp.echo(&c);
+        resp.set_template("123");
+        resp.assign("var", "你好".to_string());
+        resp.render();
         return resp;
     }
 

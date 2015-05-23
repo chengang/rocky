@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fs;
 use std::path::Path;
 pub use common::*;
 
@@ -64,38 +63,49 @@ fn file_to_tokens(path: &Path) -> Vec<String> {
 }
 
 pub struct Template {
-    pub templates: HashMap<String, String>,
+    pub dir: String,
+    pub name: String,
+    pub suffix: String,
+    pub tokens: Vec<String>,
+    pub vars: HashMap<String, String>,
 }
 
-impl Template{
-    pub fn new(path: &str) -> Template {
-        let mut templates: HashMap<String, String> = HashMap::new();
-        let path = Path::new(path);
-        if is_dir(path) {
-            match fs::read_dir(path) {
-                Err(why) => println!("! {:?}", why.kind()),
-                Ok(paths) => for entry in paths {
-                    let mut template_name = String::new();
-                    let mut template_content = String::new();
-                    match entry {
-                        Err(_) => {},
-                        Ok(dir_entry) => {
-                            let dir_entry_path = dir_entry.path();
-                            let template_path = dir_entry_path.as_path().clone();
-                            template_name =
-                                dir_entry_path.file_name().unwrap().to_os_string().into_string().unwrap();
-                            if is_file(template_path) {
-                                let tokens = file_to_tokens(template_path);
-                                for x in tokens.iter() {
-                                        template_content.push_str(&x);
-                                }
-                            } 
-                        },
-                    }
-                    templates.insert(template_name, template_content);
-                },
+impl Template {
+    pub fn new() -> Template {
+        Template { 
+            dir: "template".to_string(),
+            name: String::new(),
+            suffix: "html".to_string(),
+            tokens: Vec::new(), 
+            vars: HashMap::new(),
+        }
+    }
+
+    pub fn set_template(&mut self, path: &str) {
+        self.name = path.to_string();
+        let mut path_string = String::new();
+        path_string.push_str(&self.dir);
+        path_string.push_str("/");
+        path_string.push_str(path);
+        path_string.push_str(".");
+        path_string.push_str(&self.suffix);
+        self.tokens = file_to_tokens(Path::new(&path_string));
+    }
+
+    pub fn assign(&mut self, var: &str, data: String) {
+        self.vars.insert(var.to_string(), data);
+    }
+
+    pub fn render(&mut self) -> String {
+        let mut template_content = String::new();
+        for x in self.tokens.iter() {
+            if x.eq("var") {
+                let c = self.vars.get("var").unwrap();
+                template_content.push_str(&c);
+            } else {
+                template_content.push_str(&x);
             }
         }
-        Template { templates: templates }
+        return template_content;
     }
 }
