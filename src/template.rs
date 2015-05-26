@@ -9,9 +9,23 @@ enum ParseStatus {
     SuffixMatchOne,
 }
 
+pub enum TokenType {
+    HTML,
+    VAR,
+    FOREACH,
+}
+
+pub struct Template {
+    pub dir: String,
+    pub name: String,
+    pub suffix: String,
+    pub tokens: Vec<(TokenType, String)>,
+    pub vars: HashMap<String, String>,
+}
+
 // todo : 1. {} in var, 2.err when not ParseStatus::Out in the end.
 #[allow(unused_variables)]
-fn file_to_tokens(path: &Path) -> Vec<String> {
+fn file_to_tokens(path: &Path) -> Vec<(TokenType, String)> {
     let mut token = String::new();
     let mut tokens = Vec::new();
     let mut parse_status = ParseStatus::Out;
@@ -37,7 +51,7 @@ fn file_to_tokens(path: &Path) -> Vec<String> {
             ParseStatus::PrefixMatchOne => {
                 if utf8_char == '{' {
                     parse_status = ParseStatus::In;
-                    tokens.push(token.clone());
+                    tokens.push((TokenType::HTML, token));
                     token = String::new();
                 } else {
                     parse_status = ParseStatus::Out;
@@ -48,7 +62,7 @@ fn file_to_tokens(path: &Path) -> Vec<String> {
             ParseStatus::SuffixMatchOne => {
                 if utf8_char == '}' {
                     parse_status = ParseStatus::Out;
-                    tokens.push(token.clone());
+                    tokens.push((TokenType::VAR, token));
                     token = String::new();
                 } else {
                     parse_status = ParseStatus::Out;
@@ -58,16 +72,8 @@ fn file_to_tokens(path: &Path) -> Vec<String> {
             },
         }
     }
-    tokens.push(token);
+    tokens.push((TokenType::HTML, token));
     return tokens;
-}
-
-pub struct Template {
-    pub dir: String,
-    pub name: String,
-    pub suffix: String,
-    pub tokens: Vec<String>,
-    pub vars: HashMap<String, String>,
 }
 
 impl Template {
@@ -98,12 +104,17 @@ impl Template {
 
     pub fn render(&mut self) -> String {
         let mut template_content = String::new();
-        for x in self.tokens.iter() {
-            if x.eq("var") {
-                let c = self.vars.get("var").unwrap();
-                template_content.push_str(&c);
-            } else {
-                template_content.push_str(&x);
+        for token in self.tokens.iter() {
+            let &(ref token_type, ref var) = token;
+            match *token_type {
+                TokenType::HTML => {
+                    template_content.push_str(var);
+                },
+                TokenType::VAR => {
+                    let c = self.vars.get("var").unwrap();
+                    template_content.push_str(c);
+                },
+                TokenType::FOREACH => {},
             }
         }
         return template_content;

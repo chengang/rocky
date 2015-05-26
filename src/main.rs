@@ -23,6 +23,8 @@ fn main() {
         resp.set_template("123");
         resp.assign("var", "你好".to_string());
         resp.render();
+        resp.echo("your request_uri is:");
+        resp.echo(&req.request_script);
         return resp;
     }
 
