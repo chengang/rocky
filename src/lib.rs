@@ -5,6 +5,7 @@ pub mod request;
 pub mod response;
 pub mod template;
 pub mod common;
+pub mod db;
 
 use self::threadpool::ThreadPool;
 use std::net::TcpListener;
@@ -14,6 +15,7 @@ pub use response::Response;
 pub use router::Router;
 pub use template::Template;
 pub use common::*;
+pub use db::redis::Redis;
 
 pub struct Rocky {
     listener: TcpListener,

@@ -10,3 +10,4 @@ keywords = ["WebFramework", "Router"]
 
 [dependencies]
 threadpool = "0.1"
+redis = "0.3.1"

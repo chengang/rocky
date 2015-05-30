@@ -1,6 +1,8 @@
 extern crate rocky;
 use rocky::{Rocky, Request, Response};
+use rocky::Redis;
 
+#[allow(unused_variables)]
 fn main() {
     fn default_handler(req: Request) -> Response {
         let mut resp = Response::new();
@@ -28,9 +30,20 @@ fn main() {
         return resp;
     }
 
+    fn redis_handler(req: Request) -> Response {
+        let mut resp = Response::new();
+        let mut redis = Redis::new("redis://127.0.0.1:6379/");
+        let value = redis.set("my_key", "store in redis.");
+        let value = redis.get("my_key");
+        resp.echo("redis example.");
+        resp.echo(&value);
+        return resp;
+    }
+
     let mut rocky = Rocky::new("127.0.0.1", 4321);
     rocky.router.get("default", default_handler );
     rocky.router.get("/hello_world", handler );
     rocky.router.get("/template", template_handler );
+    rocky.router.get("/redis", redis_handler );
     rocky.run();
 }
