@@ -123,7 +123,7 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
         status.push_str("200 OK");
         let path = Path::new(&request_info.request_uri);
         response = file2response(path);
-    } else if request_info.request_script_ext.eq("jpg") || request_info.request_script_ext.eq("png") {
+    } else if request_info.request_script_ext.eq("jpg") || request_info.request_script_ext.eq("png") || request_info.request_script_ext.eq("ico") {
         let path = Path::new(&request_info.request_uri);
         let binary_response = file2vec(path);
         let response = format!("HTTP/1.0 {}\r\n\

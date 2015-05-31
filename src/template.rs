@@ -30,7 +30,17 @@ fn file_to_tokens(path: &Path) -> Vec<(TokenType, String)> {
     let mut tokens = Vec::new();
     let mut parse_status = ParseStatus::Out;
 
-    let characters: Vec<(usize, char)> = cat(path).char_indices().collect();
+    let mut template_content;
+    let file_content = cat(path);
+    match file_content {
+        Ok(file_content) => {
+            template_content = file_content;
+        },
+        Err(_) => {
+            return tokens;
+        },
+    }
+    let characters: Vec<(usize, char)> = template_content.char_indices().collect();
     for character in characters {
         let (unused_pos, utf8_char) = character;
         match parse_status {
