@@ -119,7 +119,11 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
     let mut response = Response::new();
     let request_info = get_request_info(&stream);
 
-    if request_info.request_script_ext.eq("css") || request_info.request_script_ext.eq("js") {
+    if router.contains_key(&request_info.request_script) {
+        response.status(200);
+        let handler = router.get(&request_info.request_script).unwrap();
+        response = handler(request_info);
+    } else if request_info.request_script_ext.eq("css") || request_info.request_script_ext.eq("js") {
         response.status(200);
         let path = Path::new(&request_info.request_uri);
         response = file2response(path);
@@ -133,19 +137,14 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
                    "200 OK", binary_response.len());
         let _ =  stream.write(response.as_bytes());
         let _ =  stream.write(&binary_response);
+        return;
+    } else if router.contains_key("default") {
+        response.status(200);
+        let handler = router.get("default").unwrap();
+        response = handler(request_info);
     } else {
-        if router.contains_key(&request_info.request_script) {
-            response.status(200);
-            let handler = router.get(&request_info.request_script).unwrap();
-            response = handler(request_info);
-        } else if router.contains_key("default") {
-            response.status(200);
-            let handler = router.get("default").unwrap();
-            response = handler(request_info);
-        } else {
-            response.status(404);
-            response.echo("Not Found");
-        }
+        response.status(404);
+        response.echo("Not Found");
     }
 
     response.render();

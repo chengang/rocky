@@ -13,7 +13,7 @@ pub fn file2response(path: &Path) -> Response {
         },
         Err(_) => {
             resp.status(404);
-            resp.echo("404");
+            resp.echo("File Not Found");
             return resp; 
         },
     }
