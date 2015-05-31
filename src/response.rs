@@ -36,7 +36,8 @@ impl Response {
     }
 
     pub fn render(&mut self) {
-        self.body = self.template.render();
+        let template_content = self.template.render();
+        self.body.push_str(&template_content);
         let http_status = http_status();
         let http_status_string = http_status.get(&self.status).unwrap();
         self.response = format!("HTTP/1.0 {}\r\n\
