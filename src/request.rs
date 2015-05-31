@@ -10,6 +10,7 @@ pub struct RequestLine {
     pub request_uri: String,
     pub protocol_version: String,
     pub request_script: String,
+    pub request_script_ext: String,
     pub query_string: String,
     pub get_argv: HashMap<String, String>,
 }
@@ -27,6 +28,7 @@ pub struct Request {
     pub request_uri: String,
     pub protocol_version: String,
     pub request_script: String,
+    pub request_script_ext: String,
     pub query_string: String,
     pub get_argv: HashMap<String, String>,
     pub header: RequestHeader,

@@ -1,9 +1,13 @@
+pub mod http_helper;
+
+use std::path::Path;
 use std::net::TcpStream;
 use std::io::prelude::*;
 use std::collections::HashMap;
 
 use request::{RemoteAddr, RequestLine, RequestHeader, Request};
 use response::Response;
+use http::http_helper::*;
 
 fn get_remote_addr(stream: &TcpStream) -> RemoteAddr {
     let peer = stream.peer_addr().unwrap().to_string();
@@ -36,11 +40,16 @@ fn get_request_line(stream: &TcpStream) -> RequestLine {
     let protocol_version = v[2].to_string();
 
     let mut request_script = String::new();
+    let mut request_script_ext = String::new();
     let mut query_string = String::new();
     let mut get_argv = HashMap::new();
     {
         let v2: Vec<&str> = request_uri.split('?').collect();
         request_script = v2[0].to_string();
+        {
+            let v3: Vec<&str> = request_script.rsplit_terminator('.').collect();
+            request_script_ext = v3[0].to_string();
+        }
         if v2.len() > 1 { 
             query_string = v2[1].to_string();
             let v3: Vec<&str> = v2[1].split('&').collect();
@@ -60,6 +69,7 @@ fn get_request_line(stream: &TcpStream) -> RequestLine {
             request_uri: request_uri, 
             protocol_version: protocol_version,
             request_script: request_script,
+            request_script_ext: request_script_ext,
             query_string: query_string,
             get_argv: get_argv,
     }
@@ -96,6 +106,7 @@ fn get_request_info(stream: &TcpStream) -> Request {
         method: request_line.method,
         request_uri: request_line.request_uri,
         request_script: request_line.request_script,
+        request_script_ext: request_line.request_script_ext,
         query_string: request_line.query_string,
         protocol_version: request_line.protocol_version,
         get_argv: request_line.get_argv,
@@ -104,27 +115,46 @@ fn get_request_info(stream: &TcpStream) -> Request {
 }
 
 pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)->Response>) {
-    let request_info = get_request_info(&stream);
-
     let mut response = Response::new();
     let mut status = String::new();
-    if router.contains_key(&request_info.request_script) {
-        status.push_str("200 OK");
-        let handler = router.get(&request_info.request_script).unwrap();
-        response = handler(request_info);
-    } else if router.contains_key("default") {
-        status.push_str("200 OK");
-        let handler = router.get("default").unwrap();
-        response = handler(request_info);
+    let request_info = get_request_info(&stream);
+
+    if request_info.request_script_ext.eq("css") 
+        || request_info.request_script_ext.eq("js") {
+            status.push_str("200 OK");
+            let path = Path::new(&request_info.request_uri);
+            response = file2response(path);
+    } else if request_info.request_script_ext.eq("jpg")
+        || request_info.request_script_ext.eq("png") {
+            let path = Path::new(&request_info.request_uri);
+            let binary_response = file2vec(path);
+            let response = format!("HTTP/1.0 {}\r\n\
+                   Server: Rocky\r\n\
+                   Content-Length: {}\r\n\
+                   \r\n",
+                   status, binary_response.len());
+            let _ =  stream.write(response.as_bytes());
+            let _ =  stream.write(&binary_response);
     } else {
-        status.push_str("404 Not Found");
-        response.body.push_str("Not Found");
+            if router.contains_key(&request_info.request_script) {
+                status.push_str("200 OK");
+                let handler = router.get(&request_info.request_script).unwrap();
+                response = handler(request_info);
+            } else if router.contains_key("default") {
+                status.push_str("200 OK");
+                let handler = router.get("default").unwrap();
+                response = handler(request_info);
+            } else {
+                status.push_str("404 Not Found");
+                response.body.push_str("Not Found");
+            }
     }
+
     let response = format!("HTTP/1.0 {}\r\n\
-                       Server: Rocky\r\n\
-                       Content-Length: {}\r\n\
-                       \r\n\
-                       {}\r\n", 
-                       status, response.body.len()+2, response.body);
+                   Server: Rocky\r\n\
+                   Content-Length: {}\r\n\
+                   \r\n\
+                   {}", 
+                   status, response.body.len(), response.body);
     let _ =  stream.write(response.as_bytes());
 }
