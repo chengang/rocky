@@ -12,6 +12,7 @@ pub fn file2response(path: &Path) -> Response {
             return resp; 
         },
         Err(_) => {
+            resp.status(404);
             resp.echo("404");
             return resp; 
         },

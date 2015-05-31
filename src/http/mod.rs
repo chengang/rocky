@@ -1,4 +1,6 @@
+pub mod status;
 mod http_helper;
+use http::http_helper::*;
 
 use std::path::Path;
 use std::net::TcpStream;
@@ -7,7 +9,6 @@ use std::collections::HashMap;
 
 use request::{RemoteAddr, RequestLine, RequestHeader, Request};
 use response::Response;
-use http::http_helper::*;
 
 fn get_remote_addr(stream: &TcpStream) -> RemoteAddr {
     let peer = stream.peer_addr().unwrap().to_string();
@@ -116,11 +117,10 @@ fn get_request_info(stream: &TcpStream) -> Request {
 
 pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)->Response>) {
     let mut response = Response::new();
-    let mut status = String::new();
     let request_info = get_request_info(&stream);
 
     if request_info.request_script_ext.eq("css") || request_info.request_script_ext.eq("js") {
-        status.push_str("200 OK");
+        response.status(200);
         let path = Path::new(&request_info.request_uri);
         response = file2response(path);
     } else if request_info.request_script_ext.eq("jpg") || request_info.request_script_ext.eq("png") || request_info.request_script_ext.eq("ico") {
@@ -130,29 +130,24 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
                    Server: Rocky\r\n\
                    Content-Length: {}\r\n\
                    \r\n",
-                   status, binary_response.len());
+                   "200 OK", binary_response.len());
         let _ =  stream.write(response.as_bytes());
         let _ =  stream.write(&binary_response);
     } else {
         if router.contains_key(&request_info.request_script) {
-            status.push_str("200 OK");
+            response.status(200);
             let handler = router.get(&request_info.request_script).unwrap();
             response = handler(request_info);
         } else if router.contains_key("default") {
-            status.push_str("200 OK");
+            response.status(200);
             let handler = router.get("default").unwrap();
             response = handler(request_info);
         } else {
-            status.push_str("404 Not Found");
-            response.body.push_str("Not Found");
+            response.status(404);
+            response.echo("Not Found");
         }
     }
 
-    let response = format!("HTTP/1.0 {}\r\n\
-                   Server: Rocky\r\n\
-                   Content-Length: {}\r\n\
-                   \r\n\
-                   {}", 
-                   status, response.body.len(), response.body);
-    let _ =  stream.write(response.as_bytes());
+    response.render();
+    let _ =  stream.write(response.response.as_bytes());
 }
