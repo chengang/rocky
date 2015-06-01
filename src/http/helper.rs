@@ -8,26 +8,32 @@ pub fn file2response(path: &Path) -> Response {
     let file_content = cat(path_buf.as_path());
     match file_content {
         Ok(file_content) => {
+            resp.set_status(200);
             resp.echo(&file_content);
             return resp; 
         },
         Err(_) => {
-            resp.status(404);
+            resp.set_status(404);
             resp.echo("File Not Found");
             return resp; 
         },
     }
 }
 
-pub fn file2vec(path: &Path) -> Vec<u8> {
+pub fn file2vec(path: &Path) -> Response {
+    let mut resp = Response::new();
     let path_buf = chroot_path(path, "public");
     let file_content = binary_cat(path_buf.as_path());
     match file_content {
         Ok(file_content) => {
-            return file_content; 
+            resp.set_status(200);
+            resp.body = file_content;
+            return resp; 
         },
         Err(_) => {
-            return Vec::new(); 
+            resp.set_status(404);
+            resp.echo("File Not Found");
+            return resp; 
         },
     }
 }

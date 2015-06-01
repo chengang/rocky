@@ -3,28 +3,28 @@ use http::status::http_status;
 
 pub struct Response {
     pub template: Template,
-    pub body: String,
+    pub body: Vec<u8>,
     pub status: u16,
-    pub response: String,
+    pub response: Vec<u8>,
 }
 
 impl Response {
     pub fn new() -> Response {
         Response { 
-            body: "".to_string(),
             template: Template::new(),
+            body: Vec::new(),
             status: 403,
-            response: "".to_string(),
+            response: Vec::new(),
         }
     }
 
-    pub fn status(&mut self, status: u16) {
+    pub fn set_status(&mut self, status: u16) {
         self.status = status;
     }
 
     pub fn echo(&mut self, content: &str) {
         let mut body = &mut self.body;
-        body.push_str(content);
+        body.extend(content.to_string().into_bytes());
     }
 
     pub fn set_template(&mut self, template_name: &str) {
@@ -37,14 +37,15 @@ impl Response {
 
     pub fn render(&mut self) {
         let template_content = self.template.render();
-        self.body.push_str(&template_content);
+        self.body.extend(template_content.into_bytes());
         let http_status = http_status();
         let http_status_string = http_status.get(&self.status).unwrap();
-        self.response = format!("HTTP/1.0 {}\r\n\
+        let result = format!("HTTP/1.0 {}\r\n\
                    Server: Rocky\r\n\
                    Content-Length: {}\r\n\
-                   \r\n\
-                   {}",
-                   http_status_string, self.body.len(), self.body);
+                   \r\n",
+                   http_status_string, self.body.len());
+        self.response.extend(result.into_bytes());
+        self.response.extend(self.body.clone());
     }
 }

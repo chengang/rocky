@@ -123,33 +123,24 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
     let request_info = get_request_info(&stream);
 
     if router.contains_key(&request_info.request_script) {
-        response.status(200);
+        response.set_status(200);
         let handler = router.get(&request_info.request_script).unwrap();
         response = handler(request_info);
     } else if request_info.request_script_ext.eq("css") || request_info.request_script_ext.eq("js") {
-        response.status(200);
         let path = Path::new(&request_info.request_uri);
         response = file2response(path);
     } else if request_info.request_script_ext.eq("jpg") || request_info.request_script_ext.eq("png") || request_info.request_script_ext.eq("ico") {
         let path = Path::new(&request_info.request_uri);
-        let binary_response = file2vec(path);
-        let response = format!("HTTP/1.0 {}\r\n\
-                   Server: Rocky\r\n\
-                   Content-Length: {}\r\n\
-                   \r\n",
-                   "200 OK", binary_response.len());
-        let _ =  stream.write(response.as_bytes());
-        let _ =  stream.write(&binary_response);
-        return;
+        response = file2vec(path);
     } else if router.contains_key("default") {
-        response.status(200);
+        response.set_status(200);
         let handler = router.get("default").unwrap();
         response = handler(request_info);
     } else {
-        response.status(404);
+        response.set_status(404);
         response.echo("Not Found");
     }
 
     response.render();
-    let _ =  stream.write(response.response.as_bytes());
+    let _ =  stream.write(&response.response);
 }
