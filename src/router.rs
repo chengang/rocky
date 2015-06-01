@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use request::Request;
-use response::Response;
+use http::request::Request;
+use http::response::Response;
 
 pub struct Router {
     pub routers: HashMap<String, fn(Request)->Response>,

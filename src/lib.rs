@@ -1,17 +1,16 @@
 extern crate threadpool;
-pub mod http;
-pub mod router;
-pub mod request;
-pub mod response;
-pub mod template;
-pub mod common;
-pub mod db;
 
 use self::threadpool::ThreadPool;
 use std::net::TcpListener;
 use std::net::Ipv4Addr;
-pub use request::Request;
-pub use response::Response;
+
+pub mod http;
+pub mod router;
+pub mod template;
+pub mod common;
+pub mod db;
+pub use http::request::Request;
+pub use http::response::Response;
 pub use router::Router;
 pub use template::Template;
 pub use common::*;

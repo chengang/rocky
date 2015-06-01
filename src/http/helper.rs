@@ -1,5 +1,5 @@
 use std::path::Path;
-use response::Response;
+use http::response::Response;
 use common::*;
 
 pub fn file2response(path: &Path) -> Response {

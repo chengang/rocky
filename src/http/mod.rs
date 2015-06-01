@@ -1,14 +1,17 @@
-pub mod status;
-mod http_helper;
-use http::http_helper::*;
-
 use std::path::Path;
 use std::net::TcpStream;
 use std::io::prelude::*;
 use std::collections::HashMap;
 
-use request::{RemoteAddr, RequestLine, RequestHeader, Request};
-use response::Response;
+mod helper;
+use http::helper::*;
+
+pub mod status;
+
+pub mod request;
+pub mod response;
+use http::request::{RemoteAddr, RequestLine, RequestHeader, Request};
+use http::response::Response;
 
 fn get_remote_addr(stream: &TcpStream) -> RemoteAddr {
     let peer = stream.peer_addr().unwrap().to_string();
