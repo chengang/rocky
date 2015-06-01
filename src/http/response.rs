@@ -9,11 +9,11 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn new() -> Response {
+    pub fn new(status: u16) -> Response {
         Response { 
             template: Template::new(),
             body: Vec::new(),
-            status: 403,
+            status: status,
             response: Vec::new(),
         }
     }

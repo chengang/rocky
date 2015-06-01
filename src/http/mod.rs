@@ -119,11 +119,10 @@ fn get_request_info(stream: &TcpStream) -> Request {
 }
 
 pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)->Response>) {
-    let mut response = Response::new();
+    let mut response = Response::new(200);
     let request_info = get_request_info(&stream);
 
     if router.contains_key(&request_info.request_script) {
-        response.set_status(200);
         let handler = router.get(&request_info.request_script).unwrap();
         response = handler(request_info);
     } else if request_info.request_script_ext.eq("css") || request_info.request_script_ext.eq("js") || request_info.request_script_ext.eq("jpg") 
@@ -131,7 +130,6 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
         let path = Path::new(&request_info.request_uri);
         response = file2response(path);
     } else if router.contains_key("default") {
-        response.set_status(200);
         let handler = router.get("default").unwrap();
         response = handler(request_info);
     } else {
