@@ -31,14 +31,14 @@ impl Redis {
         return result;
     }
 
-    pub fn zrange_withscores(&mut self, key: &str, start: isize, stop: isize) -> (String, isize) {
+    pub fn zrange_withscores(&mut self, key: &str, start: isize, stop: isize) -> (String, i64) {
         let addr: &str= from_utf8(self.addr.as_bytes()).unwrap();
         let client = redis::Client::open(addr).unwrap();
         let con = client.get_connection().unwrap();
 
         let result: Vec<String> = con.zrange_withscores(key, start, stop).unwrap();
         let content = result[0].clone();
-        let score = result[1].clone().parse::<isize>().unwrap();
+        let score = result[1].clone().parse::<i64>().unwrap();
         return (content, score);
     }
 }
