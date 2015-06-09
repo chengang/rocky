@@ -121,7 +121,7 @@ impl Template {
                     template_content.push_str(var);
                 },
                 TokenType::VAR => {
-                    let c = self.vars.get("var").unwrap();
+                    let c = self.vars.get(var).unwrap();
                     template_content.push_str(c);
                 },
                 TokenType::FOREACH => {},

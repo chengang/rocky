@@ -14,6 +14,14 @@ impl Redis {
         }
     }
 
+    pub fn set(&mut self, key: &str, value: &str) {
+        let addr: &str= from_utf8(self.addr.as_bytes()).unwrap();
+        let client = redis::Client::open(addr).unwrap();
+        let con = client.get_connection().unwrap();
+
+        let _ :() = con.set(key, value).unwrap();
+    }
+
     pub fn get(&mut self, key: &str) -> String {
         let addr: &str= from_utf8(self.addr.as_bytes()).unwrap();
         let client = redis::Client::open(addr).unwrap();
@@ -23,11 +31,12 @@ impl Redis {
         return result;
     }
 
-    pub fn set(&mut self, key: &str, value: &str) {
+    pub fn zrange(&mut self, key: &str, start: isize, stop: isize, withscores: bool) -> Vec<String> {
         let addr: &str= from_utf8(self.addr.as_bytes()).unwrap();
         let client = redis::Client::open(addr).unwrap();
         let con = client.get_connection().unwrap();
 
-        let _ :() = con.set(key, value).unwrap();
+        let result: Vec<String> = con.zrange_withscores(key, start, stop).unwrap();
+        return result;
     }
 }

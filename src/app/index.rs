@@ -1,10 +1,20 @@
 extern crate rocky;
 use rocky::{Request, Response};
+use rocky::Redis;
+use rocky::helper::*;
+
+// or use rocky::*
 
 pub fn index(req: Request) -> Response {
     let mut resp = Response::new(200);
+    let mut redis = Redis::new("redis://127.0.0.1:6379/");
+    let single_post = redis.zrange("posts", -1, 1, true);
+    let post_content = single_post[0].clone();
+    let post_ts = ts2str(single_post[1].clone().parse::<u32>().unwrap());
+    
     resp.set_template("index");
-    resp.assign("var", "你好".to_string());
+    resp.assign("post_content", post_content );
+    resp.assign("post_ts", post_ts );
     resp.render();
     return resp;
 }

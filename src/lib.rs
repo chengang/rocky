@@ -8,12 +8,14 @@ pub mod http;
 pub mod router;
 pub mod template;
 pub mod common;
+pub mod helper;
 pub mod db;
 pub use http::request::Request;
 pub use http::response::Response;
 pub use router::Router;
 pub use template::Template;
 pub use common::*;
+pub use helper::*;
 pub use db::redis::Redis;
 
 pub struct Rocky {
