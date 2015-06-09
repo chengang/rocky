@@ -8,7 +8,7 @@ use rocky::helper::*;
 pub fn index(req: Request) -> Response {
     let mut resp = Response::new(200);
     let mut redis = Redis::new("redis://127.0.0.1:6379/");
-    let (post_content, post_ts) = redis.zrange("posts", -1, 1, true);
+    let (post_content, post_ts) = redis.zrange_withscores("posts", -1, -1);
     let post_datestr = ts2str(post_ts);
     
     resp.set_template("index");

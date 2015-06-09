@@ -31,8 +31,7 @@ impl Redis {
         return result;
     }
 
-    pub fn zrange(&mut self, key: &str, start: isize, stop: isize, withscores: bool) -> (String,
-                                                                                         isize) {
+    pub fn zrange_withscores(&mut self, key: &str, start: isize, stop: isize) -> (String, isize) {
         let addr: &str= from_utf8(self.addr.as_bytes()).unwrap();
         let client = redis::Client::open(addr).unwrap();
         let con = client.get_connection().unwrap();
