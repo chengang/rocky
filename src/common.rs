@@ -23,13 +23,13 @@ pub fn cat(path: &Path) -> Result<String, &str> {
     let mut content = String::new();
     match File::open(path) {
         Err(e) => {
-            println!("{}", e);
+            println!("cat open error: {}", e);
             return Err("file open error");
         },
         Ok(mut fh) => {
             match fh.read_to_string(&mut content) {
                 Err(e) => {
-                    println!("{}", e);
+                    println!("cat read error: {}", e);
                     return Err("file read error");
                 },
                 Ok(_) => Ok(content),
