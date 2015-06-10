@@ -10,9 +10,11 @@ enum ParseStatus {
 }
 
 pub enum TokenType {
-    HTML,
-    VAR,
-    FOREACH,
+    Html,
+    Var,
+    Foreach,
+    ForeachVar,
+    ForeachClose,
 }
 
 pub struct Template {
@@ -61,7 +63,7 @@ fn file_to_tokens(path: &Path) -> Vec<(TokenType, String)> {
             ParseStatus::PrefixMatchOne => {
                 if utf8_char == '{' {
                     parse_status = ParseStatus::In;
-                    tokens.push((TokenType::HTML, token));
+                    tokens.push((TokenType::Html, token));
                     token = String::new();
                 } else {
                     parse_status = ParseStatus::Out;
@@ -72,7 +74,7 @@ fn file_to_tokens(path: &Path) -> Vec<(TokenType, String)> {
             ParseStatus::SuffixMatchOne => {
                 if utf8_char == '}' {
                     parse_status = ParseStatus::Out;
-                    tokens.push((TokenType::VAR, token));
+                    tokens.push((TokenType::Var, token));
                     token = String::new();
                 } else {
                     parse_status = ParseStatus::Out;
@@ -82,7 +84,7 @@ fn file_to_tokens(path: &Path) -> Vec<(TokenType, String)> {
             },
         }
     }
-    tokens.push((TokenType::HTML, token));
+    tokens.push((TokenType::Html, token));
     return tokens;
 }
 
@@ -117,14 +119,16 @@ impl Template {
         for token in self.tokens.iter() {
             let &(ref token_type, ref var) = token;
             match *token_type {
-                TokenType::HTML => {
+                TokenType::Html => {
                     template_content.push_str(var);
                 },
-                TokenType::VAR => {
+                TokenType::Var => {
                     let c = self.vars.get(var).unwrap();
                     template_content.push_str(c);
                 },
-                TokenType::FOREACH => {},
+                TokenType::Foreach => {},
+                TokenType::ForeachVar => {},
+                TokenType::ForeachClose => {},
             }
         }
         return template_content;
