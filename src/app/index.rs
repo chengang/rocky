@@ -13,8 +13,7 @@ pub fn index(req: Request) -> Response {
     let post_datestr = ts2str(post_ts);
     
     resp.set_template("index");
-    resp.assign("post_content", post_content );
-    resp.assign("post_ts", post_datestr );
-    resp.render();
+    resp.assign(".post_content", post_content );
+    resp.assign(".post_ts", post_datestr );
     return resp;
 }

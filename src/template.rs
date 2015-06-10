@@ -9,6 +9,7 @@ enum ParseStatus {
     SuffixMatchOne,
 }
 
+#[derive(Debug)]
 pub enum TokenType {
     Html,
     Var,
@@ -56,7 +57,7 @@ fn file_to_tokens(path: &Path) -> Vec<(TokenType, String)> {
             ParseStatus::In => { 
                 if utf8_char == '}' {
                     parse_status = ParseStatus::SuffixMatchOne;
-                } else if utf8_char != ' ' {
+                } else {
                     token.push(utf8_char);
                 }
             },
@@ -74,7 +75,20 @@ fn file_to_tokens(path: &Path) -> Vec<(TokenType, String)> {
             ParseStatus::SuffixMatchOne => {
                 if utf8_char == '}' {
                     parse_status = ParseStatus::Out;
-                    tokens.push((TokenType::Var, token));
+                    {
+                        let words: Vec<&str> = token.trim().split(' ').collect();
+                        if words.len() == 1 {
+                            if words[0] == "endforeach" {
+                                tokens.push((TokenType::ForeachClose, "".to_string()));
+                            } else if words[0].starts_with(".") {
+                                tokens.push((TokenType::ForeachVar, words[0].to_string()));
+                            } else {
+                                tokens.push((TokenType::Var, words[0].to_string()));
+                            }
+                        } else if words[0] == "foreach" {
+                            tokens.push((TokenType::Foreach, words[1].to_string()));
+                        }
+                    }
                     token = String::new();
                 } else {
                     parse_status = ParseStatus::Out;
@@ -117,6 +131,7 @@ impl Template {
     pub fn render(&mut self) -> String {
         let mut template_content = String::new();
         for token in self.tokens.iter() {
+            println!("{:?}", token);
             let &(ref token_type, ref var) = token;
             match *token_type {
                 TokenType::Html => {

@@ -42,15 +42,18 @@
       </div>
     </div>
 
+    {{ foreach posts }}
     <div class="container" style="margin-top: 10px;">
       <div class="row">
         <div class="col-md-8 col-md-offset-2" style="background-color: #071a37; color: #bbb;">
-          <p style="font-size:16px;margin-top: 10px;">{{ post_content }}</p>
-          <p style="font-size: 6px; color: #38547b;margin-top: 10px;">{{ post_ts }} 来自 Web</p>
+          <p style="font-size:16px;margin-top: 10px;">{{ .post_content }}</p>
+          <p style="font-size: 6px; color: #38547b;margin-top: 10px;">{{ .post_ts }} 来自 Web</p>
         </div>
       </div>
     </div>
+    {{ endforeach }}
 
+    <!--
     <div class="container" style="margin-top: 10px;">
       <div class="row">
         <div class="col-md-8 col-md-offset-2" style="background-color: #071a37; color: #bbb;">
@@ -60,11 +63,12 @@
         </div>
       </div>
     </div>
+    -->
 
     <div class="container-fluid" style="margin-top: 10px;">
       <div class="row">
         <div class="col-md-12" style="background-color: #041124; color: #38547b;height: 50px;">
-          <p class="text-center" style="font-size:12px;margin-top: 10px;">Copyright © 2015 Powered By RockyOnRust </p>
+          <p class="text-center" style="font-size:12px;margin-top: 10px;">Copyright © 2015 Powered By Rust On Rocky </p>
         </div>
       </div>
     </div>
