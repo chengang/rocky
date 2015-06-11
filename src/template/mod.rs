@@ -9,9 +9,14 @@ enum ParseStatus {
     SuffixMatchOne,
 }
 
-enum RenderStatus {
-    ForeachIn,
-    ForeachOut,
+enum RenderStatusForeach {
+    In,
+    Out,
+}
+
+enum RenderStatusIf {
+    In,
+    Out,
 }
 
 #[derive(Debug)]
@@ -21,6 +26,8 @@ pub enum TokenType {
     Foreach,
     ForeachVar,
     ForeachClose,
+    If,
+    IfClose,
 }
 
 #[derive(Debug)]
@@ -36,6 +43,7 @@ pub struct Template {
     pub tokens: Vec<Token>,
     pub vars: HashMap<String, String>,
     pub foreach_vars: HashMap<String, Vec<HashMap<String, String>>>,
+    pub if_vars: HashMap<String, bool>,
 }
 
 // todo : err when not ParseStatus::Out in the end.
@@ -91,6 +99,8 @@ fn file_to_tokens(path: &Path) -> Vec<Token> {
                         if words.len() == 1 {
                             if words[0] == "endforeach" {
                                 tokens.push(Token {t: TokenType::ForeachClose, v: "".to_string()} );
+                            } else if words[0] == "endif" {
+                                tokens.push(Token {t: TokenType::IfClose, v: "".to_string()} );
                             } else if words[0].starts_with(".") {
                                 tokens.push(Token {t: TokenType::ForeachVar, v: words[0].trim_left_matches('.').to_string()} );
                             } else {
@@ -98,6 +108,8 @@ fn file_to_tokens(path: &Path) -> Vec<Token> {
                             }
                         } else if words[0] == "foreach" {
                             tokens.push(Token {t: TokenType::Foreach, v: words[1].to_string()} );
+                        } else if words[0] == "if" {
+                            tokens.push(Token {t: TokenType::If, v: words[1].to_string()} );
                         }
                     }
                     token = String::new();
@@ -122,6 +134,7 @@ impl Template {
             tokens: Vec::new(), 
             vars: HashMap::new(),
             foreach_vars: HashMap::new(),
+            if_vars: HashMap::new(),
         }
     }
 
@@ -144,48 +157,86 @@ impl Template {
         self.foreach_vars.insert(var.to_string(), data);
     }
 
+    pub fn assign_bool(&mut self, var: &str, data: bool) {
+        self.if_vars.insert(var.to_string(), data);
+    }
+
     pub fn render(&mut self) -> String {
         let mut template_content = String::new();
         let mut token_stack = Vec::new(); // for 'foreach' cmd
-        let mut render_status = RenderStatus::ForeachOut;
+        let mut render_status_foreach = RenderStatusForeach::Out;
+        let mut render_status_if = RenderStatusIf::Out;
+        let mut if_var = String::new();
 
         for token in self.tokens.iter() {
             match token.t {
                 TokenType::Html => {
-                    match render_status {
-                        RenderStatus::ForeachOut => { template_content.push_str(&token.v) },
-                        RenderStatus::ForeachIn => { token_stack.push(token) },
+                    match render_status_foreach {
+                        RenderStatusForeach::In => { 
+                            match render_status_if {
+                                RenderStatusIf::In => { 
+                                    if *self.if_vars.get(&if_var).unwrap() { token_stack.push(token) };
+                                },
+                                RenderStatusIf::Out => { token_stack.push(token) },
+                            }
+                        },
+                        RenderStatusForeach::Out => { 
+                            match render_status_if {
+                                RenderStatusIf::In => { 
+                                    if *self.if_vars.get(&if_var).unwrap() { template_content.push_str(&token.v) };
+                                },
+                                RenderStatusIf::Out => { template_content.push_str(&token.v) },
+                            }
+                        },
                     }
                 },
                 TokenType::Var => {
-                    match render_status {
-                        RenderStatus::ForeachOut => { 
-                            let c = self.vars.get(&token.v).unwrap();
-                            template_content.push_str(c);
+                    match render_status_foreach {
+                        RenderStatusForeach::In => { 
+                            match render_status_if {
+                                RenderStatusIf::In => { 
+                                    if *self.if_vars.get(&if_var).unwrap() { token_stack.push(token) };
+                                },
+                                RenderStatusIf::Out => { token_stack.push(token) },
+                            }
+                        },
+                        RenderStatusForeach::Out => { 
+                            match render_status_if {
+                                RenderStatusIf::In => { 
+                                    if *self.if_vars.get(&if_var).unwrap() { template_content.push_str(self.vars.get(&token.v).unwrap()); };
+                                },
+                                RenderStatusIf::Out => { template_content.push_str(self.vars.get(&token.v).unwrap()); },
+                            }
                         }
-                        RenderStatus::ForeachIn => { token_stack.push(token) },
                     }
                 },
                 TokenType::Foreach => {
-                    render_status = RenderStatus::ForeachIn;
+                    render_status_foreach = RenderStatusForeach::In;
                     token_stack.push(token);
                 },
                 TokenType::ForeachVar => {
-                    token_stack.push(token);
+                    match render_status_if {
+                        RenderStatusIf::In => { 
+                            if *self.if_vars.get(&if_var).unwrap() { token_stack.push(token); };
+                        },
+                        RenderStatusIf::Out => { token_stack.push(token); },
+                    }
                 },
                 TokenType::ForeachClose => {
-                    render_status = RenderStatus::ForeachOut;
+                    render_status_foreach = RenderStatusForeach::Out;
                     let mut my_token_stack = Vec::new();
-                    let mut foreach_name = String::new();
+                    let foreach_name;
                     loop {
                         let my_token = token_stack.pop().unwrap();
                         match my_token.t {
                             TokenType::Foreach => { 
-                                //foreach_name.push_str(&my_token.v);
                                 foreach_name = my_token.v.clone();
                                 break; 
                             },
                             TokenType::Html | TokenType::Var | TokenType::ForeachVar => {
+                                my_token_stack.insert(0, my_token);
+                            },
+                            TokenType::If | TokenType::IfClose => {
                                 my_token_stack.insert(0, my_token);
                             },
                             TokenType::ForeachClose => {},
@@ -209,9 +260,18 @@ impl Template {
                                 },
                                 TokenType::Foreach => {},
                                 TokenType::ForeachClose => {},
+                                TokenType::If => {},
+                                TokenType::IfClose => {},
                             }
                         }
                     }
+                },
+                TokenType::If => {
+                    render_status_if = RenderStatusIf::In;
+                    if_var = token.v.clone();
+                },
+                TokenType::IfClose => {
+                    render_status_if = RenderStatusIf::Out;
                 },
             }
         }

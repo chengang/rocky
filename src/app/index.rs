@@ -21,5 +21,6 @@ pub fn index(req: Request) -> Response {
 
     resp.set_template("index");
     resp.assign_array("posts", var_posts );
+    resp.assign_bool("have_pic", true );
     return resp;
 }

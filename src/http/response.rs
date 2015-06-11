@@ -40,6 +40,10 @@ impl Response {
         self.template.assign_array(var, data);
     }
 
+    pub fn assign_bool(&mut self, var: &str, data: bool) {
+        self.template.assign_bool(var, data);
+    }
+
     pub fn render(&mut self) {
         let template_content = self.template.render();
         self.body.extend(template_content.into_bytes());
