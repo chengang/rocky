@@ -10,6 +10,7 @@
       body { background-color: #0d3b6c; }
       .myinput { border-radius: 0; }
       .myinput:focus { border-width: 0px; outline:solid 1px #fa7d3c; box-shadow:none; }
+      .img-thumbnail { width:80px; height:80px; border-radius: 0; padding: 0px; border-width: 0px; cursor:move; }
     </style>
 
     <title>小番茄的微博</title>
@@ -51,7 +52,7 @@
         <div class="col-md-8 col-md-offset-2" style="background-color: #071a37; color: #bbb;">
           <p style="font-size:16px;margin-top: 10px;">{{ .post_content }}</p>
           {{ if have_pic }}
-          <img class="img-responsive img-thumbnail" style="width:80px;height:80px;" src="pic/headbg.jpg" />
+          <img class="img-responsive img-thumbnail" src="pic/headbg.jpg"/>
           {{ endif }}
           <p style="font-size: 6px; color: #38547b;margin-top: 10px;">{{ .post_datestr }} 来自 Web</p>
         </div>
@@ -69,5 +70,9 @@
 
     </div>
   </body>
+  <script src="js/jquery.min.js"></script>
+  <script>
+    $(".img-thumbnail").bind("click", function(event) { $(this).toggleClass("img-thumbnail"); });
+  </script>
 </html>
 
