@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use template::Template;
 use http::status::http_status;
 
@@ -33,6 +34,10 @@ impl Response {
 
     pub fn assign(&mut self, var: &str, data: String) {
         self.template.assign(var, data);
+    }
+
+    pub fn assign_array(&mut self, var: &str, data: Vec<HashMap<String, String>>) {
+        self.template.assign_array(var, data);
     }
 
     pub fn render(&mut self) {
