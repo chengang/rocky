@@ -1,3 +1,6 @@
+extern crate url;
+use self::url::form_urlencoded;
+
 use std::path::Path;
 use std::net::TcpStream;
 use std::io::prelude::*;
@@ -56,14 +59,9 @@ fn get_request_line(stream: &TcpStream) -> RequestLine {
         }
         if v2.len() > 1 { 
             query_string = v2[1].to_string();
-            let v3: Vec<&str> = v2[1].split('&').collect();
-            for kv_pair in v3.iter() {
-                let v4: Vec<&str> = kv_pair.split('=').collect();
-                if v4.len() > 1 {
-                    get_argv.insert(v4[0].to_string(), v4[1].to_string());
-                } else {
-                    get_argv.insert(v4[0].to_string(), "".to_string());
-                }
+            let query_vec = form_urlencoded::parse(query_string.as_bytes());
+            for (k, v) in query_vec.into_iter() {
+                get_argv.insert(k, v);
             }
         }
     }
