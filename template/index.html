@@ -33,7 +33,7 @@
             <div class="form-group">
               <input type="text" placeholder="小番茄今天乖吗?" class="form-control myinput" style="width:800px">
             </div>
-            <button type="submit" class="btn btn-info"disabled="disabled" style="background: #f06923;border:1px solid #f06923;width:80px;">发布</button>
+            <button type="submit" class="btn btn-info" disabled="disabled" style="background: #f06923;border:1px solid #f06923;width:80px;">发布</button>
           </form>
         </div>
       </div>
@@ -52,7 +52,7 @@
       </div>
     </div>
 
-    <div class="container">
+    <div class="container" id="posts">
     {{ foreach posts }}
       <div class="row" style="margin-top: 10px;">
         <div class="col-md-8 col-md-offset-2" style="background-color: #071a37; color: #b0bdd0; border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,0.2);">
@@ -84,6 +84,30 @@
   <script src="js/jquery.min.js"></script>
   <script>
     $(".img-thumbnail").bind("click", function(event) { $(this).toggleClass("img-thumbnail img-normal"); });
+    $("input[type='text']").keyup( function(event) { 
+      if( $(this).val().trim().length > 0 )
+        $("button[type='submit']").attr("disabled", false); 
+      else
+        $("button[type='submit']").attr("disabled", true); 
+    });
+
+    $("form").submit( function () {
+      var post_content = $("input[type='text']").val();
+      var post = $('#posts > div:first').clone();
+      $(post).find("p").first().text(post_content);
+      $(post).find("p").last().text("刚刚 来自 Web");
+/*
+      var post = "      <div class=\"row\" style=\"margin-top: 10px;\"> \
+        <div class=\"col-md-8 col-md-offset-2\" style=\"background-color: #071a37; color: #b0bdd0; border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,0.2);\"> \
+          <p style=\"font-size:14px; line-height:23px; margin-top:10px; margin-bottom:5px; \">" + post_content + "</p> \
+          <p style=\"font-size: 6px; color: #38547b;margin-top: 10px;\">刚刚 来自 Web</p> \
+        </div> \
+      </div>";
+*/
+      $(post).hide().prependTo($('#posts')).slideDown('slow');
+      $("input[type='text']").val("");
+      return false;
+    } );
   </script>
 </html>
 
