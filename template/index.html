@@ -96,14 +96,6 @@
       var post = $('#posts > div:first').clone();
       $(post).find("p").first().text(post_content);
       $(post).find("p").last().text("刚刚 来自 Web");
-/*
-      var post = "      <div class=\"row\" style=\"margin-top: 10px;\"> \
-        <div class=\"col-md-8 col-md-offset-2\" style=\"background-color: #071a37; color: #b0bdd0; border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,0.2);\"> \
-          <p style=\"font-size:14px; line-height:23px; margin-top:10px; margin-bottom:5px; \">" + post_content + "</p> \
-          <p style=\"font-size: 6px; color: #38547b;margin-top: 10px;\">刚刚 来自 Web</p> \
-        </div> \
-      </div>";
-*/
       $(post).hide().prependTo($('#posts')).slideDown('slow');
       $("input[type='text']").val("");
       return false;
