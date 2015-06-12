@@ -126,7 +126,7 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
         let handler = router.get(&request_info.request_script).unwrap();
         response = handler(request_info);
     } else if request_info.request_script_ext.eq("css") || request_info.request_script_ext.eq("js") || request_info.request_script_ext.eq("jpg") 
-        || request_info.request_script_ext.eq("png") || request_info.request_script_ext.eq("ico") {
+        || request_info.request_script_ext.eq("png") || request_info.request_script_ext.eq("ico") || request_info.request_script_ext.eq("cur") {
         let path = Path::new(&request_info.request_uri);
         response = file2response(path);
     } else if router.contains_key("default") {

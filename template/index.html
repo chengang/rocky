@@ -7,10 +7,16 @@
     <link rel="bookmark" href="/favicon.ico"/>
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <style>
-      body { background-color: #0d3b6c; }
+      body { background-color: #0d3b6c; font-family: 'Helvetica','STHeiti','Arial','Microsoft YaHei'; font: 12px/1.3; }
+      a:link    { text-decoration:none; color: #38547b; }
+      a:active  { text-decoration:none; color: #38547b;}
+      a:visited { text-decoration:none; color: #38547b; }
+      a:hover   { text-decoration:none; color: #257cde; } 
+
       .myinput { border-radius: 0; }
       .myinput:focus { border-width: 0px; outline:solid 1px #fa7d3c; box-shadow:none; }
-      .img-thumbnail { width:80px; height:80px; border-radius: 0; padding: 0px; border-width: 0px; cursor:move; }
+      .img-thumbnail { max-width:120px; max-height:120px; border-radius: 0; padding: 0px; border-width: 0px; cursor: url(cur/big.cur), auto; }
+      .img-normal { cursor: url(cur/small.cur), auto; }
     </style>
 
     <title>小番茄的微博</title>
@@ -49,8 +55,8 @@
     <div class="container">
     {{ foreach posts }}
       <div class="row" style="margin-top: 10px;">
-        <div class="col-md-8 col-md-offset-2" style="background-color: #071a37; color: #bbb;">
-          <p style="font-size:16px;margin-top: 10px;">{{ .post_content }}</p>
+        <div class="col-md-8 col-md-offset-2" style="background-color: #071a37; color: #b0bdd0; border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,0.2);">
+          <p style="font-size:14px; line-height:23px; margin-top:10px; margin-bottom:5px; ">{{ .post_content }}</p>
           {{ if have_pic }}
           <img class="img-responsive img-thumbnail" src="pic/headbg.jpg"/>
           {{ endif }}
@@ -60,9 +66,14 @@
     {{ endforeach }}
     </div>
 
-    <div class="container-fluid" style="margin-top: 10px;">
+    <div class="container-fluid" style="margin-top: 12px;">
       <div class="row">
-        <div class="col-md-12" style="background-color: #041124; color: #38547b;height: 50px;">
+        <div class="col-md-12" style="background-color: #071a37; color: #38547b; height: 66px;">
+          <p class="text-center" style="font-size:12px;margin-top: 10px;"><a href="#">Android客户端</a></p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12" style="background-color: #041124; color: #38547b; height: 50px;">
           <p class="text-center" style="font-size:12px;margin-top: 10px;">Copyright © 2015 Powered By Rust On Rocky </p>
         </div>
       </div>
@@ -72,7 +83,7 @@
   </body>
   <script src="js/jquery.min.js"></script>
   <script>
-    $(".img-thumbnail").bind("click", function(event) { $(this).toggleClass("img-thumbnail"); });
+    $(".img-thumbnail").bind("click", function(event) { $(this).toggleClass("img-thumbnail img-normal"); });
   </script>
 </html>
 
