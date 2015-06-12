@@ -9,7 +9,13 @@ use std::collections::HashMap;
 pub fn index(req: Request) -> Response {
     let mut resp = Response::new(200);
     let mut redis = Redis::new("redis://127.0.0.1:6379/");
-    let posts: Vec<(String, i64)> = redis.zrange("posts", -100, -1);
+
+    let page = 1;
+    let posts_per_page = 100;
+    let start = 0 - ( page * posts_per_page );
+    let end = 0 - ( ( page - 1 ) * posts_per_page ) - 1;
+    let posts: Vec<(String, i64)> = redis.zrange("posts", start, end);
+
     let mut var_posts = Vec::new();
     for post in posts.iter() {
         let (post_content, post_ts) = post.clone();
