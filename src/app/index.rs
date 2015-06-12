@@ -9,7 +9,7 @@ use std::collections::HashMap;
 pub fn index(req: Request) -> Response {
     let mut resp = Response::new(200);
     let mut redis = Redis::new("redis://127.0.0.1:6379/");
-    let posts: Vec<(String, i64)> = redis.zrange_withscores("posts", -2, -1);
+    let posts: Vec<(String, i64)> = redis.zrange_withscores("posts", -100, -1);
     let mut var_posts = Vec::new();
     for post in posts.iter() {
         let (post_content, post_ts) = post.clone();
@@ -21,6 +21,6 @@ pub fn index(req: Request) -> Response {
 
     resp.set_template("index");
     resp.assign_array("posts", var_posts );
-    resp.assign_bool("have_pic", true );
+    resp.assign_bool("have_pic", false );
     return resp;
 }

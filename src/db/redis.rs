@@ -31,7 +31,15 @@ impl Redis {
         return result;
     }
 
-    // todo: use T return value
+    pub fn zadd(&mut self, key: &str, member: &str, score: i64) -> i64 {
+        let addr: &str= from_utf8(self.addr.as_bytes()).unwrap();
+        let client = redis::Client::open(addr).unwrap();
+        let con = client.get_connection().unwrap();
+    
+        let result :i64 = con.zadd(key, member, score).unwrap();
+        return result;
+    }
+
     pub fn zrange_withscores(&mut self, key: &str, start: isize, stop: isize) -> Vec<(String, i64)> {
         let addr: &str= from_utf8(self.addr.as_bytes()).unwrap();
         let client = redis::Client::open(addr).unwrap();
@@ -39,13 +47,5 @@ impl Redis {
 
         let redis_bulk: Vec<(String, i64)> = con.zrange_withscores(key, start, stop).unwrap();
         return redis_bulk;
-        /*
-        let mut result = Vec::new();
-        for one_line in redis_bulk.iter() {
-            let (content, score): (String, i64) = (*one_line).clone();
-            result.push((content, score));
-        }
-        return result;
-        */
     }
 }
