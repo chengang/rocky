@@ -40,7 +40,16 @@ impl Redis {
         return result;
     }
 
-    pub fn zrange_withscores(&mut self, key: &str, start: isize, stop: isize) -> Vec<(String, i64)> {
+    pub fn zrangebyscore(&mut self, key: &str, min: isize, max: isize, offset: isize, count: isize) -> Vec<(String, i64)> {
+        let addr: &str= from_utf8(self.addr.as_bytes()).unwrap();
+        let client = redis::Client::open(addr).unwrap();
+        let con = client.get_connection().unwrap();
+    
+        let redis_bulk: Vec<(String, i64)> = con.zrangebyscore_limit_withscores(key, min, max, offset, count).unwrap();
+        return redis_bulk;
+    }
+
+    pub fn zrange(&mut self, key: &str, start: isize, stop: isize) -> Vec<(String, i64)> {
         let addr: &str= from_utf8(self.addr.as_bytes()).unwrap();
         let client = redis::Client::open(addr).unwrap();
         let con = client.get_connection().unwrap();
