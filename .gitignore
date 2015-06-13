@@ -1,8 +1,8 @@
 target
 Cargo.lock
 *swp
-template/
-public/
-src/main.rs
-src/app/
+/template/
+/public/
+/src/main.rs
+/src/app/
 
