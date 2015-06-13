@@ -1,6 +1,6 @@
 [package]
 name = "rocky"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Chen Gang <chengang@cpan.org>"]
 repository = "https://github.com/chengang/rocky"
 description = "Lite WebFramework in rust"
@@ -9,7 +9,7 @@ readme = "README.md"
 keywords = ["WebFramework", "Router"]
 
 [dependencies]
-threadpool = "0.1.4"
-time = "0.1.26"
-url = "0.2.35"
-redis = "0.3.1"
+threadpool = "~0.1.4"
+time = "~0.1.26"
+url = "~0.2.35"
+redis = "~0.3.1"

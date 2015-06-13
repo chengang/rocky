@@ -137,4 +137,5 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
 
     response.render();
     let _ =  stream.write(&response.response);
+    let _ =  stream.read(&mut [0; 1]);
 }
