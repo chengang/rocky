@@ -16,3 +16,10 @@ pub fn timestamp() -> i64 {
     let result = tm_now.sec;
     return result; 
 }
+
+pub fn timestamp_mircosecond() -> (i64, i64) {
+    let tm_now = now().to_timespec();
+    let sec = tm_now.sec;
+    let nsec = tm_now.nsec as i64;
+    return (sec, nsec); 
+}
