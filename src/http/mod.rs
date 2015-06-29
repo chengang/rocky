@@ -1,6 +1,7 @@
 extern crate url;
 use self::url::form_urlencoded;
 
+use std::str;
 use std::path::Path;
 use std::net::TcpStream;
 use std::io::prelude::*;
@@ -133,8 +134,22 @@ fn get_request_info(stream: &mut TcpStream) -> Request {
 }
 */
 
-fn get_request_info(stream: &TcpStream) -> Request {
-    let request_line = get_request_line(&stream);
+fn get_request_info(mut stream: &TcpStream) -> Request {
+    let mut req = String::new();
+    let two_blank_line_raw = &[13, 10, 13];
+    let two_blank_line = str::from_utf8(two_blank_line_raw).unwrap();
+    while !req.contains(two_blank_line) {
+        let mut buf = [0u8; 4096];
+        let read_byte = stream.read(&mut buf).unwrap();
+        for n in 1..read_byte {
+            req.push(buf[n-1] as char);
+        }
+        println!("123[{}]", req);
+        println!("789[{:?}]", req.as_bytes() );
+    }
+    println!("456[{}]", req);
+
+    let request_line = get_request_line(&mut stream);
     let request_header = get_request_header(&stream);
     let remote_addr = get_remote_addr(&stream);
     Request {
