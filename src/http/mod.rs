@@ -10,8 +10,6 @@ use std::collections::HashMap;
 mod helper;
 use http::helper::*;
 
-//use super::helper::timestamp_mircosecond;
-
 pub mod status;
 
 pub mod request;
@@ -29,22 +27,9 @@ fn get_remote_addr(stream: &TcpStream) -> RemoteAddr {
     RemoteAddr {ip: peer_ip, port: peer_port}
 }
 
-fn ht_readline(mut stream: &TcpStream) -> String {
-    let mut result = String::new();
-    loop {
-        let mut buf = [0u8];
-        let _ = stream.read(&mut buf);
-        if buf[0]==13 { break; }
-        if buf[0]==10 { continue; }
-        result.push(buf[0] as char);
-    }
-    return result;
-}
-
 #[allow(unused_assignments)]
-fn get_request_line(stream: &TcpStream) -> RequestLine {
-    let line = ht_readline(&stream);
-    let v: Vec<&str> = line.split(' ').collect();
+fn parse_request_line(request_line: &str) -> RequestLine {
+    let v: Vec<&str> = request_line.split(' ').collect();
     let method = v[0].to_string();
     let request_uri = v[1].to_string();
     let protocol_version = v[2].to_string();
@@ -80,78 +65,48 @@ fn get_request_line(stream: &TcpStream) -> RequestLine {
     }
 }
 
-fn get_request_header(stream: &TcpStream) -> RequestHeader {
-    let mut request_header = RequestHeader {
-        user_agent: "".to_string(),
-        host: "".to_string(),
-        accept: "".to_string(),
-    };
-    loop {
-        let line = ht_readline(&stream);
-        if line.is_empty() { break; }
-        let v: Vec<&str> = line.split(' ').collect();
-        match v[0] {
-            "User-Agent:" => { request_header.user_agent = v[1].to_string(); },
-            "Host:" => { request_header.host = v[1].to_string(); },
-            "Accept:" => { request_header.accept = v[1].to_string(); },
-            _ => {},
-        }
-    }
-
-    return request_header;
+fn parse_request_header(request_line: &str) -> Vec<&str> {
+    let v: Vec<&str> = request_line.split(' ').collect();
+    return v;
 }
-
-/*
-fn get_request_info(stream: &mut TcpStream) -> Request {
-    //println!("start");
-    let (_, s) = timestamp_mircosecond();
-    //let mut buf = [0u8; 4096];
-    //let a = stream.read(&mut buf).unwrap();
-    let mut result = String::new();
-    for x in 0..7 {
-        let mut buf = [0u8; 10];
-        let _ = stream.read(&mut buf);
-        result.push(buf[0] as char);
-    }
-    let (_, e) = timestamp_mircosecond();
-    println!("{:?}", (e-s)/1000);
-    //println!("{:?}", a);
-    //let _ = stream.read_to_string(&mut request);
-    //println!("end");
-    Request {
-        remote_ip: "ip".to_string(),
-        remote_port: 4321,
-        method: "get".to_string(),
-        request_uri: "/".to_string(),
-        request_script: "/".to_string(),
-        request_script_ext: "rs".to_string(),
-        query_string: "".to_string(),
-        protocol_version: "1.1".to_string(),
-        get_argv: HashMap::new(),
-        header: RequestHeader {user_agent: "".to_string(), host: "".to_string(), accept:
-            "".to_string(), }
-    }
-}
-*/
 
 fn get_request_info(mut stream: &TcpStream) -> Request {
+    let remote_addr = get_remote_addr(&stream);
+
     let mut req = String::new();
     let two_blank_line_raw = &[13, 10, 13, 10];
     let two_blank_line = str::from_utf8(two_blank_line_raw).unwrap();
     while !req.contains(two_blank_line) {
         let mut buf = [0u8; 4096];
         let read_byte = stream.read(&mut buf).unwrap();
-        //let buf_str = str::from_utf8(&(buf[0.. read_byte])).unwrap().trim_right_matches(0u8 as char);
         let buf_str = str::from_utf8(&buf[0..read_byte]).unwrap();
         req.push_str(buf_str);
-        //println!("123{}", req);
-        //println!("456{:?}", req.as_bytes());
     }
-    //println!("789{}", req);
 
-    let request_line = get_request_line(&mut stream);
-    let request_header = get_request_header(&stream);
-    let remote_addr = get_remote_addr(&stream);
+    let head_and_body: Vec<&str> = req.splitn(2, two_blank_line).collect();
+    let head = head_and_body[0];
+    //let body = head_and_body[1];
+
+    let head_lines: Vec<&str> = head.lines().collect(); 
+    let mut line_number: u16 = 0;
+    let mut request_line = RequestLine::new();
+    let mut request_header = RequestHeader::new();
+    for line in head_lines {
+        line_number = line_number + 1;
+        if line_number == 1 {
+            request_line = parse_request_line(line);
+        } else {
+            if line.is_empty() { break; }
+            let v: Vec<&str> = parse_request_header(line);
+            match v[0] {
+                "User-Agent:" => { request_header.user_agent = v[1].to_string(); },
+                "Host:" => { request_header.host = v[1].to_string(); },
+                "Accept:" => { request_header.accept = v[1].to_string(); },
+                _ => {},
+            }
+        }
+    }
+
     Request {
         remote_ip: remote_addr.ip,
         remote_port: remote_addr.port,
