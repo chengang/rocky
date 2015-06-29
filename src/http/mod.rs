@@ -9,6 +9,8 @@ use std::collections::HashMap;
 mod helper;
 use http::helper::*;
 
+//use super::helper::timestamp_mircosecond;
+
 pub mod status;
 
 pub mod request;
@@ -97,6 +99,39 @@ fn get_request_header(stream: &TcpStream) -> RequestHeader {
 
     return request_header;
 }
+
+/*
+fn get_request_info(stream: &mut TcpStream) -> Request {
+    //println!("start");
+    let (_, s) = timestamp_mircosecond();
+    //let mut buf = [0u8; 4096];
+    //let a = stream.read(&mut buf).unwrap();
+    let mut result = String::new();
+    for x in 0..7 {
+        let mut buf = [0u8; 10];
+        let _ = stream.read(&mut buf);
+        result.push(buf[0] as char);
+    }
+    let (_, e) = timestamp_mircosecond();
+    println!("{:?}", (e-s)/1000);
+    //println!("{:?}", a);
+    //let _ = stream.read_to_string(&mut request);
+    //println!("end");
+    Request {
+        remote_ip: "ip".to_string(),
+        remote_port: 4321,
+        method: "get".to_string(),
+        request_uri: "/".to_string(),
+        request_script: "/".to_string(),
+        request_script_ext: "rs".to_string(),
+        query_string: "".to_string(),
+        protocol_version: "1.1".to_string(),
+        get_argv: HashMap::new(),
+        header: RequestHeader {user_agent: "".to_string(), host: "".to_string(), accept:
+            "".to_string(), }
+    }
+}
+*/
 
 fn get_request_info(stream: &TcpStream) -> Request {
     let request_line = get_request_line(&stream);
