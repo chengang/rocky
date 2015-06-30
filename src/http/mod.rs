@@ -73,16 +73,16 @@ fn parse_request_header(request_line: &str) -> Vec<&str> {
 fn get_request_info(mut stream: &TcpStream) -> Request {
     let remote_addr = get_remote_addr(&stream);
 
-    let mut req = String::new();
-    let two_blank_line_raw = &[13, 10, 13, 10];
-    let two_blank_line = str::from_utf8(two_blank_line_raw).unwrap();
 
     let mut buf = [0u8; 8192];
     let read_byte = stream.read(&mut buf).unwrap();
     let buf_str = str::from_utf8(&buf[0..read_byte]).unwrap();
+    let mut req = String::new();
     req.push_str(buf_str);
 
-    let head_and_body: Vec<&str> = req.splitn(2, two_blank_line).collect();
+    let blank_line_raw = &[13, 10, 13, 10];
+    let blank_line = str::from_utf8(blank_line_raw).unwrap();
+    let head_and_body: Vec<&str> = req.splitn(2, blank_line).collect();
     let head = head_and_body[0];
     //let body = head_and_body[1];
 
