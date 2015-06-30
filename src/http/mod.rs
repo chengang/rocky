@@ -4,6 +4,7 @@ use self::url::form_urlencoded;
 use std::str;
 use std::path::Path;
 use std::net::TcpStream;
+use std::net::Shutdown;
 use std::io::prelude::*;
 use std::collections::HashMap;
 
@@ -140,6 +141,6 @@ pub fn handle_client(mut stream: TcpStream, router: HashMap<String, fn(Request)-
     }
 
     response.render();
-    let _ =  stream.write(&response.response);
-    let _ =  stream.read(&mut [0; 1]);
+    let _ = stream.write(&response.response);
+    let _ = stream.shutdown(Shutdown::Both);
 }
