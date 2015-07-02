@@ -22,6 +22,8 @@ pub struct RequestHeader {
     pub user_agent: String,
     pub host: String,
     pub accept: String,
+    pub content_length: usize,
+    pub content_type: String,
 }
 
 #[derive(Debug)]
@@ -35,7 +37,9 @@ pub struct Request {
     pub request_script_ext: String,
     pub query_string: String,
     pub get_argv: HashMap<String, String>,
+    pub post_argv: HashMap<String, String>,
     pub header: RequestHeader,
+    pub body: Vec<u8>,
 }
 
 impl RequestLine {
@@ -58,6 +62,8 @@ impl RequestHeader {
             user_agent: "".to_string(),
             host: "".to_string(),
             accept: "".to_string(),
+            content_length: 0,
+            content_type: "".to_string(),
         }
     }
 }

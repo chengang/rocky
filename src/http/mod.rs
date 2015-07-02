@@ -28,6 +28,15 @@ fn get_remote_addr(stream: &TcpStream) -> RemoteAddr {
     RemoteAddr {ip: peer_ip, port: peer_port}
 }
 
+fn parse_query_string(query_string: &str) -> HashMap<String, String> {
+    let mut get_argv = HashMap::new();
+    let query_vec = form_urlencoded::parse(query_string.as_bytes());
+    for (k, v) in query_vec.into_iter() {
+        get_argv.insert(k, v);
+    }
+    get_argv
+}
+
 #[allow(unused_assignments)]
 fn parse_request_line(request_line: &str) -> RequestLine {
     let v: Vec<&str> = request_line.split(' ').collect();
@@ -48,10 +57,7 @@ fn parse_request_line(request_line: &str) -> RequestLine {
         }
         if v2.len() > 1 { 
             query_string = v2[1].to_string();
-            let query_vec = form_urlencoded::parse(query_string.as_bytes());
-            for (k, v) in query_vec.into_iter() {
-                get_argv.insert(k, v);
-            }
+            get_argv = parse_query_string(&query_string);
         }
     }
 
@@ -66,45 +72,55 @@ fn parse_request_line(request_line: &str) -> RequestLine {
     }
 }
 
-fn parse_request_header(request_line: &str) -> Vec<&str> {
-    let v: Vec<&str> = request_line.split(' ').collect();
-    return v;
+fn parse_request_header(head_lines: Vec<&str>) -> RequestHeader {
+    let mut request_header = RequestHeader::new();
+    for line in head_lines {
+        if line.is_empty() { break; }
+        let v: Vec<&str> = line.split(' ').collect();
+        println!("[{:?}]", v);
+        match v[0] {
+            "User-Agent:" => { request_header.user_agent = v[1].trim_right().to_string(); },
+            "Host:" => { request_header.host = v[1].trim_right().to_string(); },
+            "Accept:" => { request_header.accept = v[1].trim_right().to_string(); },
+            "Content-Length:" => { request_header.content_length = v[1].trim_right().parse::<usize>().unwrap(); },
+            "Content-Type:" => { request_header.content_type = v[1].trim_right().to_string(); },
+            _ => {},
+        }
+    }
+    request_header
 }
 
+#[allow(unused_assignments)]
 fn get_request_info(mut stream: &TcpStream) -> Request {
     let remote_addr = get_remote_addr(&stream);
 
-
     let mut buf = [0u8; 8192];
     let read_byte = stream.read(&mut buf).unwrap();
-    let buf_str = str::from_utf8(&buf[0..read_byte]).unwrap();
-    let mut req = String::new();
-    req.push_str(buf_str);
+    let req = str::from_utf8(&buf[0..read_byte]).unwrap().to_string();
 
     let blank_line_raw = &[13, 10, 13, 10];
     let blank_line = str::from_utf8(blank_line_raw).unwrap();
     let head_and_body: Vec<&str> = req.splitn(2, blank_line).collect();
-    let head = head_and_body[0];
-    //let body = head_and_body[1];
 
-    let head_lines: Vec<&str> = head.lines().collect(); 
-    let mut line_number: u16 = 0;
-    let mut request_line = RequestLine::new();
-    let mut request_header = RequestHeader::new();
-    for line in head_lines {
-        line_number = line_number + 1;
-        if line_number == 1 {
-            request_line = parse_request_line(line);
-        } else {
-            if line.is_empty() { break; }
-            let v: Vec<&str> = parse_request_header(line);
-            match v[0] {
-                "User-Agent:" => { request_header.user_agent = v[1].to_string(); },
-                "Host:" => { request_header.host = v[1].to_string(); },
-                "Accept:" => { request_header.accept = v[1].to_string(); },
-                _ => {},
-            }
-        }
+    let head = head_and_body[0];
+    let mut head_lines: Vec<&str> = head.lines().collect(); 
+    let request_line = parse_request_line(head_lines.remove(0));
+    let request_header = parse_request_header(head_lines);
+
+    let mut body = head_and_body[1].to_string();
+    let content_length = request_header.content_length;
+    let mut body_unread_byte = content_length - body.len();
+    while body_unread_byte > 0 {
+        let mut buf = [0u8; 8192];
+        let read_byte = stream.read(&mut buf).unwrap();
+        let buf_str = str::from_utf8(&buf).unwrap();
+        body.push_str(buf_str);
+        body_unread_byte = body_unread_byte - read_byte;
+    }
+
+    let mut post_argv = HashMap::new();
+    if request_header.content_type.eq("application/x-www-form-urlencoded") {
+        post_argv = parse_query_string(&body);
     }
 
     Request {
@@ -117,7 +133,9 @@ fn get_request_info(mut stream: &TcpStream) -> Request {
         query_string: request_line.query_string,
         protocol_version: request_line.protocol_version,
         get_argv: request_line.get_argv,
+        post_argv: post_argv,
         header: request_header,
+        body: body.bytes().collect(),
     }
 }
 
