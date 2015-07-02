@@ -94,7 +94,7 @@ fn parse_request_header(head_lines: Vec<&str>) -> RequestHeader {
 fn get_request_info(mut stream: &TcpStream) -> Request {
     let remote_addr = get_remote_addr(&stream);
 
-    let mut buf = [0u8; 8192];
+    let mut buf = [0u8; 4096];
     let read_byte = stream.read(&mut buf).unwrap();
     let req = str::from_utf8(&buf[0..read_byte]).unwrap().to_string();
 
@@ -108,18 +108,16 @@ fn get_request_info(mut stream: &TcpStream) -> Request {
     let request_header = parse_request_header(head_lines);
 
     let mut body = head_and_body[1].to_string();
-    let content_length = request_header.content_length;
-    let mut body_unread_byte = content_length - body.len();
-    while body_unread_byte > 0 {
-        let mut buf = [0u8; 8192];
-        let read_byte = stream.read(&mut buf).unwrap();
-        let buf_str = str::from_utf8(&buf).unwrap();
-        body.push_str(buf_str);
-        body_unread_byte = body_unread_byte - read_byte;
-    }
-
     let mut post_argv = HashMap::new();
     if request_header.content_type.eq("application/x-www-form-urlencoded") {
+        let mut body_unread_byte = request_header.content_length - body.len();
+        while body_unread_byte > 0 {
+            let mut buf = [0u8; 4096];
+            let read_byte = stream.read(&mut buf).unwrap();
+            let buf_str = str::from_utf8(&buf).unwrap();
+            body.push_str(buf_str);
+            body_unread_byte = body_unread_byte - read_byte;
+        }
         post_argv = parse_query_string(&body);
     }
 
