@@ -36,11 +36,11 @@ impl Rocky {
     pub fn run(&self) {
         let pool = ThreadPool::new(32);
         for stream in self.listener.incoming() {
-            let router = self.router.routers.clone();
+            let router_clone = self.router.clone();
             match stream {
                 Ok(stream) => {
                     pool.execute(move|| {
-                        http::handle_client(stream, router);
+                        http::handle_client(stream, router_clone);
                     });
                 }
                 Err(e) => { let _ = e;}

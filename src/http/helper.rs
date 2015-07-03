@@ -1,3 +1,7 @@
+extern crate url;
+use self::url::form_urlencoded;
+
+use std::collections::HashMap;
 use std::path::Path;
 use http::response::Response;
 use common::*;
@@ -17,4 +21,13 @@ pub fn file2response(path: &Path) -> Response {
             return resp; 
         },
     }
+}
+
+pub fn parse_query_string(query_string: &str) -> HashMap<String, String> {
+    let mut get_argv = HashMap::new();
+    let query_vec = form_urlencoded::parse(query_string.as_bytes());
+    for (k, v) in query_vec.into_iter() {
+        get_argv.insert(k, v);
+    }
+    get_argv
 }
