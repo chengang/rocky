@@ -10,6 +10,7 @@ pub mod template;
 pub mod common;
 pub mod helper;
 pub mod db;
+pub mod global_variable;
 pub use http::request::Request;
 pub use http::response::Response;
 pub use router::Router;
@@ -30,6 +31,12 @@ impl Rocky {
         Rocky {
             listener: listener,
             router: Router::new(),
+        }
+    }
+
+    pub fn redis_setup(&self, redis_addr: &'static str) {
+        unsafe {
+            global_variable::redis_addr = redis_addr;
         }
     }
 
